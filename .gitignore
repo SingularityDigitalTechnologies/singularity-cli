@@ -1,0 +1,10 @@
+# Vim
+*.swp
+*.swo
+
+# Python
+*.pyc
+
+# CLI
+__pycache__
+*.egg-info
