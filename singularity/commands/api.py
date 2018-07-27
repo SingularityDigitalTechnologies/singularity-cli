@@ -1,4 +1,6 @@
+import hmac
 import json
+import requests
 
 from collections import namedtuple
 from hashlib import sha512
@@ -31,14 +33,15 @@ class AbstractRequest(Command):
         self.scheme = url_params[0]
         self.netloc = url_params[1]
 
-        self.secret = options.get('secret', '')
-        self.api_key = options.get('api-key', '')
+        self.secret = options.get('--secret', '')
+        self.api_key = options.get('--api-key', '')
 
     def generate_sha512_hmac(self, secret, method, endpoint, payload):
         base_sig = '%s\n%s\n%s' % (method, endpoint, payload)
         return hmac.new(
-            secret.encode('utf-8'), bytes(base_sig).encode('utf-8'),
-            digestmod=hashlib.sha512
+            secret.encode('utf-8'),
+            bytes(base_sig.encode('utf-8')),
+            digestmod=sha512
         ).hexdigest()
 
     def get_headers(self, endpoint, payload):
@@ -54,7 +57,7 @@ class AbstractRequest(Command):
         )
 
         return {
-            'X-singularity-apikey': self.key,
+            'X-singularity-apikey': self.api_key,
             'X-singularity-signature': signature,
         }
 
@@ -71,11 +74,18 @@ class AbstractRequest(Command):
         headers = headers or {}
         request = Request(endpoint.method, url, data=payload, headers=headers)
 
-        return Session().send(request.prepare())
+        try:
+            response = Session().send(request.prepare())
+        except requests.exceptions.ConnectionError:
+            raise SystemExit('Unable to establish connection with API')
 
     def request(self, endpoint, payload=''):
         headers = self.get_headers(endpoint, payload)
-        response = self.send_request(endpoint, payload=payload, headers=headers)
+        response = self.send_request(
+            endpoint,
+            payload=payload,
+            headers=headers,
+        )
 
         trace = response.headers.get('X-atlas-trace')
 
@@ -113,9 +123,9 @@ class BatchAdd(AbstractRequest):
     def run(self):
 
         payload = json.dumps({
-	    'type': self.type,
-	    'priority': self.priority,
-	    'job_data': self.payload,
+            'type': self.type,
+            'priority': self.priority,
+            'job_data': self.payload,
         })
 
         self.request(BATCH_ADD_ENDPOINT, payload)
