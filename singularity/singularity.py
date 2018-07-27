@@ -3,7 +3,7 @@ singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli batch add <payload> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
-  singularity-cli batch status <id> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
+  singularity-cli batch status --api-key=<api_key> --secret=<secret> [--api-url=<api_url>] [--uuid=<uuid>]
   singularity-cli -h | --help
   singularity-cli --version
 
@@ -26,6 +26,7 @@ from docopt import docopt
 from . import __version__ as VERSION
 
 from singularity.commands.api import BatchAdd
+from singularity.commands.api import BatchStatus
 from singularity.commands.api import Ping
 
 
@@ -36,8 +37,11 @@ def main():
     if options.get('ping'):
         cmd = Ping(options)
 
-    if options.get('batch') and options.get('add'):
+    elif options.get('batch') and options.get('add'):
         cmd = BatchAdd(options)
+
+    elif options.get('batch') and options.get('status'):
+        cmd = BatchStatus(options)
 
     if not cmd:
         print('Unknown option')

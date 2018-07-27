@@ -119,3 +119,18 @@ class BatchAdd(AbstractRequest):
         })
 
         self.request(BATCH_ADD_ENDPOINT, payload)
+
+
+class BatchStatus(AbstractRequest):
+
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.endpoint = BATCH_INFO_ENDPOINT
+
+        uuid = options.get('--uuid')
+        if uuid:
+            self.endpoint = Endpoint(path='/batch/%s' % uuid, method='GET')
+
+    def run(self):
+        self.request(self.endpoint)
