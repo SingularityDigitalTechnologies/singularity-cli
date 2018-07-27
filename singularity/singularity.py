@@ -2,7 +2,7 @@
 singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
-  singularity-cli batch add <data> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
+  singularity-cli batch add <payload> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
   singularity-cli batch status <id> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
   singularity-cli -h | --help
   singularity-cli --version
