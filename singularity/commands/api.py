@@ -78,6 +78,8 @@ class AbstractRequest(Command):
             response = Session().send(request.prepare())
         except requests.exceptions.ConnectionError:
             raise SystemExit('Unable to establish connection with API')
+        else:
+            return response
 
     def request(self, endpoint, payload=''):
         headers = self.get_headers(endpoint, payload)
