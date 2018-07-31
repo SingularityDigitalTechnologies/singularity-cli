@@ -8,11 +8,14 @@ Usage:
   singularity-cli --version
 
 Options:
+  --priority=<priority> Priority of job [default: 2]
   --api-url=<api_url>   URL to send requests to [default: https://api.singularity-technologies.io]
   -h --help             Show this screen.
   --version             Show version.
 
 Examples:
+  singularity-cli batch add '[{"a": 14, "b": "27"}]' --type pythagoras --priority 0 --api-key=key --secret=secret
+  singularity-cli batch status --uuid=some-unique-id --api-key=key --secret=secret
 
 Help:
   For help using this tool, please open an issue on the repository:
