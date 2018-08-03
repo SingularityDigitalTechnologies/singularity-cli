@@ -118,19 +118,29 @@ class BatchAdd(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        payload = options.get('<payload>', '')
+        payload = options.get('<payload>', '[]')
         try:
             self.payload = json.loads(payload)
         except ValueError:
             raise SystemExit('Payload not JSON decodable')
 
         self.type = options.get('--type', '')
-        priority = options.get('--priority')
+        priority = options.get('--priority', '0')
 
         if not priority.isdigit():
             raise SystemExit('Priority must be an integer number')
 
         self.priority = int(priority)
+        cpus = options.get('--cpus', '0')
+        if not cpus.isdigit():
+            raise SystemExit('Priority must be an integer number')
+
+        self.cpus = int(cpus)
+        gpus = options.get('--gpus', '0')
+        if not gpus.isdigit():
+            raise SystemExit('Priority must be an integer number')
+
+        self.gpus = int(gpus)
 
     def run(self):
 
@@ -138,6 +148,10 @@ class BatchAdd(AbstractRequest):
             'type': self.type,
             'priority': self.priority,
             'jobs': self.payload,
+            'requisitions': [
+                {'type': 'CPU', 'quantity': self.cpus},
+                {'type': 'GPU', 'quantity': self.gpus},
+            ]
         })
 
         self.request(BATCH_ADD_ENDPOINT, payload)

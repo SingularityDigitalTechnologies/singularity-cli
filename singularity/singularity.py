@@ -2,12 +2,14 @@
 singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
-  singularity-cli batch add <payload> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
+  singularity-cli batch add <payload> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> --cpus=<cpus> [--gpus=<gpus>] [--api-url=<api_url>]
   singularity-cli batch status --api-key=<api_key> --secret=<secret> [--api-url=<api_url>] [--uuid=<uuid>]
   singularity-cli -h | --help
   singularity-cli --version
 
 Options:
+  --cpus=<cpus>         Number of CPUs required for each job
+  --gpus=<gpus>         Number of GPUs required for each job
   --priority=<priority> Priority of job [default: 2]
   --api-url=<api_url>   URL to send requests to [default: https://api.singularity-technologies.io]
   -h --help             Show this screen.
