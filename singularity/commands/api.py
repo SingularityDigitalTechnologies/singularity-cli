@@ -1,5 +1,6 @@
 import hmac
 import json
+import pprint
 import requests
 
 from collections import namedtuple
@@ -17,8 +18,10 @@ Endpoint = namedtuple('Endpoint', ['path', 'method'])
 
 PING_ENDPOINT = Endpoint(path='/ping', method='GET')
 
+ATLAS_STATUS_ENDPOINT = Endpoint(path='/status', method='GET')
 BATCH_INFO_ENDPOINT = Endpoint(path='/batch', method='GET')
 BATCH_ADD_ENDPOINT = Endpoint(path='/batch', method='POST')
+JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 
 
 class AbstractRequest(Command):
@@ -97,14 +100,8 @@ class AbstractRequest(Command):
         except ValueError:
             pass
 
-        print(
-            '[%s][%d][%s] %s' % (
-                endpoint.path,
-                response.status_code,
-                trace,
-                payload or response.text
-            )
-        )
+        print('[%s][%d][%s]\n' % (endpoint.path, response.status_code, trace))
+        pprint.PrettyPrinter(indent=4).pprint(payload or response.text)
 
 
 class Ping(AbstractRequest):
@@ -167,6 +164,32 @@ class BatchStatus(AbstractRequest):
         uuid = options.get('--uuid')
         if uuid:
             self.endpoint = Endpoint(path='/batch/%s' % uuid, method='GET')
+
+    def run(self):
+        self.request(self.endpoint)
+
+
+class JobStatus(AbstractRequest):
+
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.endpoint = JOB_INFO_ENDPOINT
+
+        uuid = options.get('--uuid')
+        if uuid:
+            self.endpoint = Endpoint(path='/job/%s' % uuid, method='GET')
+
+    def run(self):
+        self.request(self.endpoint)
+
+
+class AtlasStatus(AbstractRequest):
+
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.endpoint = ATLAS_STATUS_ENDPOINT
 
     def run(self):
         self.request(self.endpoint)
