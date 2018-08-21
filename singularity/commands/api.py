@@ -23,6 +23,8 @@ BATCH_INFO_ENDPOINT = Endpoint(path='/batch', method='GET')
 BATCH_ADD_ENDPOINT = Endpoint(path='/batch', method='POST')
 JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 
+GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
+
 
 class AbstractRequest(Command):
     def __init__(self, options, *args, **kwargs):
@@ -193,3 +195,15 @@ class AtlasStatus(AbstractRequest):
 
     def run(self):
         self.request(self.endpoint)
+
+
+class GenerateHMAC(AbstractRequest):
+
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.email = options.get('<email>')
+        self.endpoint = GENERATE_HMAC
+
+    def run(self):
+        self.request(self.endpoint, json.dumps({'email': self.email}))
