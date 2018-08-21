@@ -2,10 +2,10 @@
 singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
-  singularity-cli atlas status --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
-  singularity-cli hmac new <email> --api-key=<api_key> --secret=<secret> [--api-url=<api_url>]
-  singularity-cli batch add <payload> --type=<type> --priority=<priority> --api-key=<api_key> --secret=<secret> --cpus=<cpus> [--gpus=<gpus>] [--api-url=<api_url>]
-  singularity-cli (job|batch) status --api-key=<api_key> --secret=<secret> [--api-url=<api_url>] [--uuid=<uuid>]
+  singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli hmac new <email> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli batch add <payload> --type=<type> --priority=<priority> --cpus=<cpus> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
   singularity-cli -h | --help
   singularity-cli --version
 
@@ -26,6 +26,8 @@ Help:
 """
 
 
+import json
+import os
 import sys
 
 from docopt import docopt
@@ -40,8 +42,43 @@ from singularity.commands.api import Ping
 from singularity.commands.api import JobStatus
 
 
+def __load_config():
+    home = os.environ.get('HOME')
+    default_path = os.path.join(home, '.singularity')
+
+    # Attempt to get path override
+    config_path = os.environ.get('SINGULARITY_CONFIG_PATH', default_path)
+    config_file = os.path.join(config_path, 'config.json')
+
+    if not os.path.exists(config_file):
+        print('No config file detected at: "%s"' % config_file)
+        return {}
+
+    config = {}
+    with open(config_file, 'r') as f:
+        try:
+            config = json.load(f)
+
+        except ValueError as e:
+            raise SystemExit(
+                'Config file "%s" is not valid json: %s' % (config_file, e)
+            )
+
+    return config
+
+
 def main():
+    config = __load_config()
     options = docopt(__doc__, version=VERSION)
+
+    options['--api-key'] = options['--api-key'] or config.pop('api_key', '')
+    options['--secret'] = options['--secret'] or config.pop('secret', '')
+
+    if not options.get('--api-key'):
+        raise SystemExit('API Key not set in either arguents or config file')
+
+    if not options.get('--secret'):
+        raise SystemExit('Secret not set in either arguents or config file')
 
     cmd = None
     if options.get('ping'):
