@@ -4,7 +4,7 @@ Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli hmac new <email> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-  singularity-cli batch add <payload> --type=<type> --priority=<priority> --cpus=<cpus> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli batch add <payload> --type=<type> --priority=<priority> --cpus=<cpus> --image=<image> --image-tag=<image_tag> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
   singularity-cli -h | --help
   singularity-cli --version

@@ -130,16 +130,24 @@ class BatchAdd(AbstractRequest):
             raise SystemExit('Priority must be an integer number')
 
         self.priority = int(priority)
-        cpus = options.get('--cpus', '0')
+        cpus = options.get('--cpus') or '0'
         if not cpus.isdigit():
             raise SystemExit('Priority must be an integer number')
 
         self.cpus = int(cpus)
-        gpus = options.get('--gpus', '0')
+        gpus = options.get('--gpus') or '0'
         if not gpus.isdigit():
             raise SystemExit('Priority must be an integer number')
 
         self.gpus = int(gpus)
+
+        self.image = options.get('--image', '')
+        if not self.image:
+            raise SystemExit('Image not supplied')
+
+        self.image_tag = options.get('--image-tag', '')
+        if not self.image_tag:
+            raise SystemExit('Image tag not supplied')
 
     def run(self):
 
@@ -147,10 +155,12 @@ class BatchAdd(AbstractRequest):
             'type': self.type,
             'priority': self.priority,
             'jobs': self.payload,
-            'requisitions': [
-                {'type': 'CPU', 'quantity': self.cpus},
-                {'type': 'GPU', 'quantity': self.gpus},
-            ]
+            'image': self.image,
+            'image_tag': self.image_tag,
+            'requisitions': {
+                'cpu': {'kind': 'cpu', 'quantity': self.cpus},
+                'gpu': {'kind': 'gpu', 'quantity': self.gpus},
+            }
         })
 
         self.request(BATCH_ADD_ENDPOINT, payload)
