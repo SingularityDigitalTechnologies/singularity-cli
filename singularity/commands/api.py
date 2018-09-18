@@ -24,6 +24,8 @@ BATCH_ADD_ENDPOINT = Endpoint(path='/batch', method='POST')
 JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 
 GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
+USER_ADD = Endpoint(path='/user', method='POST')
+COMPANY_ADD = Endpoint(path='/company', method='POST')
 
 
 class AbstractRequest(Command):
@@ -149,6 +151,10 @@ class BatchAdd(AbstractRequest):
         if not self.image_tag:
             raise SystemExit('Image tag not supplied')
 
+        self.results_bucket_id = options.get('--results-bucket-id', '')
+        if not self.results_bucket_id:
+            raise SystemExit('Results bucket ID not supplied')
+
     def run(self):
 
         payload = json.dumps({
@@ -157,6 +163,7 @@ class BatchAdd(AbstractRequest):
             'jobs': self.payload,
             'image': self.image,
             'image_tag': self.image_tag,
+            'results_bucket_id': self.results_bucket_id,
             'requisitions': {
                 'cpu': {'kind': 'cpu', 'quantity': self.cpus},
                 'gpu': {'kind': 'gpu', 'quantity': self.gpus},
@@ -217,3 +224,39 @@ class GenerateHMAC(AbstractRequest):
 
     def run(self):
         self.request(self.endpoint, json.dumps({'email': self.email}))
+
+
+class UserAdd(AbstractRequest):
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.first_name = options.get('<first_name>')
+        self.last_name = options.get('<last_name>')
+        self.email = options.get('<email>')
+        self.user_type = options.get('--user-type')
+        self.password = options.get('--password')
+
+        self.endpoint = USER_ADD
+
+    def run(self):
+        self.request(
+            self.endpoint,
+            json.dumps({
+                'first_name': self.first_name,
+                'last_name': self.last_name,
+                'email': self.email,
+                'user_type': self.user_type,
+                'password': self.password,
+            })
+        )
+
+
+class CompanyAdd(AbstractRequest):
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.name = options.get('<name>')
+        self.endpoint = COMPANY_ADD
+
+    def run(self):
+        self.request(self.endpoint, json.dumps({'name': self.name}))

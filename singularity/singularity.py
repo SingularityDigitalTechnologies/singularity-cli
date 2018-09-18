@@ -4,8 +4,10 @@ Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli hmac new <email> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-  singularity-cli batch add <payload> --type=<type> --priority=<priority> --cpus=<cpus> --image=<image> --image-tag=<image_tag> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli batch add <payload> --type=<type> --priority=<priority> --cpus=<cpus> --image=<image> --image-tag=<image_tag> --results-bucket-id=<bucket_id> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
+  singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>
+  singularity-cli company add <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>
   singularity-cli -h | --help
   singularity-cli --version
 
@@ -37,9 +39,11 @@ from . import __version__ as VERSION
 from singularity.commands.api import AtlasStatus
 from singularity.commands.api import BatchAdd
 from singularity.commands.api import BatchStatus
+from singularity.commands.api import CompanyAdd
 from singularity.commands.api import GenerateHMAC
 from singularity.commands.api import Ping
 from singularity.commands.api import JobStatus
+from singularity.commands.api import UserAdd
 
 
 def __load_config():
