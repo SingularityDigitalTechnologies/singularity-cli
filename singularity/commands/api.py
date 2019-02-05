@@ -20,7 +20,7 @@ PING_ENDPOINT = Endpoint(path='/ping', method='GET')
 
 ATLAS_STATUS_ENDPOINT = Endpoint(path='/status', method='GET')
 BATCH_INFO_ENDPOINT = Endpoint(path='/batch', method='GET')
-BATCH_ADD_ENDPOINT = Endpoint(path='/batch', method='POST')
+BATCH_CREATE_ENDPOINT = Endpoint(path='/batch', method='POST')
 JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 
 GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
@@ -114,7 +114,7 @@ class Ping(AbstractRequest):
         self.request(PING_ENDPOINT)
 
 
-class BatchAdd(AbstractRequest):
+class BatchCreate(AbstractRequest):
 
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
@@ -125,52 +125,33 @@ class BatchAdd(AbstractRequest):
         except ValueError:
             raise SystemExit('Payload not JSON decodable')
 
-        self.type = options.get('--type', '')
-        priority = options.get('--priority', '0')
+        self.mode = options.get('--mode', '')
+        if not self.mode:
+            raise SystemExti('Mode must be set to either Pilot or Production')
 
-        if not priority.isdigit():
-            raise SystemExit('Priority must be an integer number')
-
-        self.priority = int(priority)
         cpus = options.get('--cpus') or '0'
         if not cpus.isdigit():
-            raise SystemExit('Priority must be an integer number')
+            raise SystemExit('CPUS must be an integer number')
 
         self.cpus = int(cpus)
         gpus = options.get('--gpus') or '0'
         if not gpus.isdigit():
-            raise SystemExit('Priority must be an integer number')
+            raise SystemExit('GPUS must be an integer number')
 
         self.gpus = int(gpus)
-
-        self.image = options.get('--image', '')
-        if not self.image:
-            raise SystemExit('Image not supplied')
-
-        self.image_tag = options.get('--image-tag', '')
-        if not self.image_tag:
-            raise SystemExit('Image tag not supplied')
-
-        self.results_bucket_id = options.get('--results-bucket-id', '')
-        if not self.results_bucket_id:
-            raise SystemExit('Results bucket ID not supplied')
 
     def run(self):
 
         payload = json.dumps({
-            'type': self.type,
-            'priority': self.priority,
+            'mode': self.mode,
             'jobs': self.payload,
-            'image': self.image,
-            'image_tag': self.image_tag,
-            'results_bucket_id': self.results_bucket_id,
             'requisitions': {
                 'cpu': {'kind': 'cpu', 'quantity': self.cpus},
                 'gpu': {'kind': 'gpu', 'quantity': self.gpus},
             }
         })
 
-        self.request(BATCH_ADD_ENDPOINT, payload)
+        self.request(BATCH_CREATE_ENDPOINT, payload)
 
 
 class BatchStatus(AbstractRequest):
@@ -230,11 +211,11 @@ class UserAdd(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        self.first_name = options.get('<first_name>')
-        self.last_name = options.get('<last_name>')
-        self.email = options.get('<email>')
-        self.user_type = options.get('--user-type')
-        self.password = options.get('--password')
+        self.first_name = options.get('<first_name>', '')
+        self.last_name = options.get('<last_name>', '')
+        self.email = options.get('<email>', '')
+        self.user_type = options.get('--user-type', '').lower()
+        self.password = options.get('--password', '')
 
         self.endpoint = USER_ADD
 
