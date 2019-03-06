@@ -5,6 +5,7 @@ Usage:
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch create <payload> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
+  singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli -h | --help
   singularity-cli --version
@@ -24,9 +25,6 @@ Help:
   For help using this tool, please open an issue on the repository:
 """
 
-# singularity-cli company add <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-# singularity-cli hmac new <email> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>
-
 import json
 import os
 import sys
@@ -38,6 +36,7 @@ from . import __version__ as VERSION
 from singularity.commands.api import AtlasStatus
 from singularity.commands.api import BatchCreate
 from singularity.commands.api import BatchStatus
+from singularity.commands.api import BatchSummary
 from singularity.commands.api import CompanyAdd
 from singularity.commands.api import GenerateHMAC
 from singularity.commands.api import Ping
@@ -92,6 +91,9 @@ def main():
 
     elif options.get('batch') and options.get('status'):
         cmd = BatchStatus(options)
+
+    elif options.get('batch') and options.get('summary'):
+        cmd = BatchSummary(options)
 
     elif options.get('job') and options.get('status'):
         cmd = JobStatus(options)

@@ -1,3 +1,4 @@
+import datetime
 import hmac
 import json
 import pprint
@@ -105,6 +106,9 @@ class AbstractRequest(Command):
             pass
 
         print('[%s][%d][%s]\n' % (endpoint.path, response.status_code, trace))
+        self.print_response(payload, response)
+
+    def print_response(self, payload, response):
         pprint.PrettyPrinter(indent=4).pprint(payload or response.text)
 
 
@@ -167,6 +171,37 @@ class BatchStatus(AbstractRequest):
 
     def run(self):
         self.request(self.endpoint)
+
+
+class BatchSummary(AbstractRequest):
+
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.endpoint = BATCH_INFO_ENDPOINT
+
+        self.since = None
+        since = options.get('--since')
+        if since:
+            self.since = datetime.datetime.strptime(since, '%Y-%m-%d')
+
+    def run(self):
+        self.request(self.endpoint)
+
+    def print_response(self, payload, response):
+        if payload:
+            for _, batches in payload.items():
+                for batch in batches:
+                    uuid = batch.get('uuid', '')
+                    status = batch.get('status', '')
+                    started = batch.get('created_at', '')
+                    if not self.since:
+                        print('%s, %s: %s' % (uuid, started, status))
+                        continue
+
+                    started_datetime = datetime.datetime.strptime(started, '%Y-%m-%dT%H:%M:%S.%fZ')
+                    if started_datetime >= self.since:
+                        print('%s, %s: %s' % (uuid, started, status))
 
 
 class JobStatus(AbstractRequest):
