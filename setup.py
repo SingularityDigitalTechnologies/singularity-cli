@@ -45,7 +45,7 @@ setup(
     author_email='sam.lacey@singularity-technologies.io',
     license='MIT',
     keywords='cli',
-    packages=['commands'],
+    packages=['singularity', 'singularity.commands'],
     install_requires=[
         'docopt==0.6.2',
         'requests==2.18.4',
