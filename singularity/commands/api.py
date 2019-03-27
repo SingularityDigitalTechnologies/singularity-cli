@@ -1,6 +1,7 @@
 import datetime
 import hmac
 import json
+import os
 import pprint
 import requests
 
@@ -123,11 +124,16 @@ class BatchCreate(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        payload = options.get('<payload>', '[]')
-        try:
-            self.payload = json.loads(payload)
-        except ValueError:
-            raise SystemExit('Payload not JSON decodable')
+        self.payload = ''
+        payload_file = options.get('<payload_file>', '')
+        if not os.path.exists(payload_file):
+            raise SystemExit('"%s" is not a valid file' % payload_file)
+
+        with open(payload_file, 'r') as f:
+            try:
+                self.payload = json.load(f)
+            except ValueError:
+                raise SystemExit('Payload not JSON decodable')
 
         self.mode = options.get('--mode', '')
         if not self.mode:

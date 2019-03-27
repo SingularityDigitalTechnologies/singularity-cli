@@ -3,7 +3,7 @@ singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-  singularity-cli batch create <payload> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli batch create --payload-file <payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
