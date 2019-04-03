@@ -4,9 +4,11 @@ Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch create --payload-file <payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
-  singularity-cli (job|batch) status [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --uuid=<uuid>]
+  singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli dataset add <name> <location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli dataset summary <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli -h | --help
   singularity-cli --version
 
@@ -42,6 +44,7 @@ from singularity.commands.api import GenerateHMAC
 from singularity.commands.api import Ping
 from singularity.commands.api import JobStatus
 from singularity.commands.api import UserAdd
+from singularity.commands.api import DataSetAdd
 
 
 def __load_config():
@@ -103,6 +106,9 @@ def main():
 
     elif options.get('user') and options.get('add'):
         cmd = UserAdd(options)
+
+    elif options.get('dataset') and options.get('add'):
+        cmd = DataSetAdd(options)
 
     if not cmd:
         print('Unknown option')

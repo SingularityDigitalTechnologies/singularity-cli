@@ -28,6 +28,8 @@ JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
 USER_ADD = Endpoint(path='/user', method='POST')
 COMPANY_ADD = Endpoint(path='/company', method='POST')
+DATASET_ADD = Endpoint(path='/data', method='POST')
+CHUNK_ADD = Endpoint(path='/data/%s/chunk', method='POST')
 
 
 class AbstractRequest(Command):
@@ -108,6 +110,7 @@ class AbstractRequest(Command):
 
         print('[%s][%d][%s]\n' % (endpoint.path, response.status_code, trace))
         self.print_response(payload, response)
+        return payload
 
     def print_response(self, payload, response):
         pprint.PrettyPrinter(indent=4).pprint(payload or response.text)
@@ -282,3 +285,34 @@ class CompanyAdd(AbstractRequest):
 
     def run(self):
         self.request(self.endpoint, json.dumps({'name': self.name}))
+
+
+class DataSetAdd(AbstractRequest):
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.name = options.get('<name>')
+        self.location = options.get('<location>')
+        if not self.location:
+            raise SystemExit('Location not defined')
+
+        pilot_count = options.get('--pilot-count', 0)
+        if not pilot_count:
+            raise SystemExit('Pilot Count not defined')
+
+        if not pilot_count.isdigit():
+            raise SystemExit('Pilot Count must be an integer')
+
+        self.pilot_count = int(pilot_count)
+
+        self.dataset_endpoint = DATASET_ADD
+        self.chunk_endpoint = CHUNK_ADD
+
+    def run(self):
+        request_payload = json.dumps({
+            'name': self.name,
+            'pilot_count': self.pilot_count
+        })
+
+        payload = self.request(self.dataset_endpoint, request_payload)
+        print(payload)
