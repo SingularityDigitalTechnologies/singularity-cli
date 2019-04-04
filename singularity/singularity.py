@@ -7,7 +7,7 @@ Usage:
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-  singularity-cli dataset add <name> <location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli dataset add <name> <location> <imprint_location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset summary <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli -h | --help
   singularity-cli --version

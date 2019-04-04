@@ -14,6 +14,7 @@ from requests import Request
 from requests import Session
 
 from singularity.commands.base import Command
+from singularity.commands.data import Sharder
 
 
 Endpoint = namedtuple('Endpoint', ['path', 'method'])
@@ -292,9 +293,13 @@ class DataSetAdd(AbstractRequest):
         super().__init__(options, *args, **kwargs)
 
         self.name = options.get('<name>')
-        self.location = options.get('<location>')
-        if not self.location:
+        location = options.get('<location>')
+        if not location:
             raise SystemExit('Location not defined')
+
+        imprint_location = options.get('<imprint_location>')
+        if not imprint_location:
+            raise SystemExit('Imprint location not defined')
 
         pilot_count = options.get('--pilot-count', 0)
         if not pilot_count:
@@ -307,6 +312,12 @@ class DataSetAdd(AbstractRequest):
 
         self.dataset_endpoint = DATASET_ADD
         self.chunk_endpoint = CHUNK_ADD
+
+        sharder = Sharder(location, imprint_location)
+        for shard_id, shard in sharder.get_new_shards():
+            print(shard_id, len(shard))
+
+        boop
 
     def run(self):
         request_payload = json.dumps({
