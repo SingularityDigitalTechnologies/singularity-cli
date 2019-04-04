@@ -62,7 +62,7 @@ class Sharder(object):
                 hash_id = file_imprint.get('hash_id')
                 if hash_id == historic_hash_id:
                     found = True
-                    found_files.append(file_imprint)
+                    found_files.append({**historic_file_imprint, **file_imprint})
                     local_files.pop(i)
                     break
 
@@ -71,7 +71,6 @@ class Sharder(object):
                 if shard_id not in corrupted_shards:
                     corrupted_shards.append(shard_id)
 
-        print(len(found_files))
         return corrupted_shards, found_files
 
     def __reconcile_imprint(self):
@@ -95,12 +94,13 @@ class Sharder(object):
             if shard_id not in corrupted_shards:
                 clean_shards.append(shard_id)
 
-        missing_files = len(found_files) - len(imprint.get('files'))
+        missing_files = len(imprint.get('files')) - len(found_files)
 
         # Now need to determine what old files to include in new shard creations
         print('Determining which old files need new shards')
         clean_files = []
         unassigned_files = []
+        print('corrupted', corrupted_shards)
         for fileinfo in found_files:
             shard_id = fileinfo.get('shard_id')
             if shard_id in corrupted_shards:
