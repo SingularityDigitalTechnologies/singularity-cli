@@ -13,6 +13,7 @@ import asyncio
 
 IMPRINT_FILE_NAME = 'imprint.json'
 SHARD_MAX_SIZE = 10 * 1024 * 1024
+SHARD_BATCH_SIZE = 100
 
 
 class Sharder(object):
@@ -43,6 +44,7 @@ class Sharder(object):
             files_to_shard += event_loop.run_until_complete(future)
 
         event_loop.close()
+
         return files_to_shard
 
     def __create_imprint(self, shards, files):
@@ -82,6 +84,7 @@ class Sharder(object):
             with open(self.imprint_file, 'r') as f:
                 imprint = json.load(f)
 
+        print('Analysing directory: %s' % self.location)
         local_files = self.__find_files()
 
         # Figure out what shards have been corrupted
@@ -100,7 +103,6 @@ class Sharder(object):
         print('Determining which old files need new shards')
         clean_files = []
         unassigned_files = []
-        print('corrupted', corrupted_shards)
         for fileinfo in found_files:
             shard_id = fileinfo.get('shard_id')
             if shard_id in corrupted_shards:
@@ -115,7 +117,7 @@ class Sharder(object):
 
         for fileinfo in local_files:
             file_id = fileinfo.get('hash_id')
-            if file_id not in found_files:
+            if file_id not in [found['hash_id'] for found in found_files]:
                 unassigned_files.append(fileinfo)
 
         print('There are %d missing/changed files from imprint' % missing_files)
@@ -156,23 +158,41 @@ class Sharder(object):
         ziped = zipfile.ZipFile(ram_file, 'w')
 
         left = len(self.unassigned_files)
+        batches = []
+        start = 0
+        end = SHARD_BATCH_SIZE
+        while True:
+            batches.append(self.unassigned_files[start:end])
+            start += SHARD_BATCH_SIZE
+            end += SHARD_BATCH_SIZE
+
+            if start > left:
+                break
+
+            if end > left:
+                end = left
+
+        left = len(batches)
         while left:
             index = random.randint(0, left-1)
-            fileinfo = self.unassigned_files.pop(index)
-            size = fileinfo.get('size', 0)
-            if shard_size + size > SHARD_MAX_SIZE:
-                ziped.close()
+            batch = batches.pop(index)
 
-                yield self.__generate_shard(ram_file, shard_files)
+            for fileinfo in batch:
+                size = fileinfo.get('size', 0)
+                if shard_size + size > SHARD_MAX_SIZE:
+                    ziped.close()
 
-                shard_size = 0
-                shard_files = []
-                ram_file = io.BytesIO()
-                ziped = zipfile.ZipFile(ram_file, 'w')
+                    yield self.__generate_shard(ram_file, shard_files)
 
-            ziped.write(fileinfo.get('path'))
-            shard_size += size
-            shard_files.append(fileinfo)
+                    shard_size = 0
+                    shard_files = []
+                    ram_file = io.BytesIO()
+                    ziped = zipfile.ZipFile(ram_file, 'w')
+
+                ziped.write(fileinfo.get('path'))
+                shard_size += size
+                shard_files.append(fileinfo)
+
             left -= 1
             if not left:
                 yield self.__generate_shard(ram_file, shard_files)
