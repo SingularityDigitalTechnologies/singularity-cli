@@ -1,3 +1,4 @@
+import base64
 import datetime
 import hmac
 import json
@@ -29,8 +30,8 @@ JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
 GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
 USER_ADD = Endpoint(path='/user', method='POST')
 COMPANY_ADD = Endpoint(path='/company', method='POST')
-DATASET_ADD = Endpoint(path='/data', method='POST')
-CHUNK_ADD = Endpoint(path='/data/%s/chunk', method='POST')
+DATASET_ENDPOINT = Endpoint(path='/data', method='POST')
+SHARD_ENDPOINT = Endpoint(path='/data/%s/shard/%s', method='POST')
 
 
 class AbstractRequest(Command):
@@ -310,14 +311,10 @@ class DataSetAdd(AbstractRequest):
 
         self.pilot_count = int(pilot_count)
 
-        self.dataset_endpoint = DATASET_ADD
-        self.chunk_endpoint = CHUNK_ADD
+        self.dataset_endpoint = DATASET_ENDPOINT
+        self.shard_endpoint = SHARD_ENDPOINT
 
-        sharder = Sharder(location, imprint_location)
-        for shard_id, shard in sharder.get_new_shards():
-            print(shard_id, len(shard))
-
-        boop
+        self.sharder = Sharder(location, imprint_location)
 
     def run(self):
         request_payload = json.dumps({
@@ -326,4 +323,17 @@ class DataSetAdd(AbstractRequest):
         })
 
         payload = self.request(self.dataset_endpoint, request_payload)
-        print(payload)
+        dataset_uuid = payload.get('dataset_uuid')
+        if not dataset_uuid:
+            raise SystemExit('No dataset id recieved')
+
+        for shard_id, shard in self.sharder.get_new_shards():
+            request_payload = json.dumps({
+                'shard_id': shard_id,
+                'shard': base64.b64encode(shard).decode(),
+            })
+
+            shard_path = SHARD_ENDPOINT.path % (dataset_uuid, shard_id)
+            endpoint = Endpoint(path=shard_path, method='POST')
+            self.request(endpoint, request_payload)
+            boop
