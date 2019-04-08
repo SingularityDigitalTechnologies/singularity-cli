@@ -115,7 +115,8 @@ class AbstractRequest(Command):
         return payload
 
     def print_response(self, payload, response):
-        pprint.PrettyPrinter(indent=4).pprint(payload or response.text)
+        if payload or response.text:
+            pprint.PrettyPrinter(indent=4).pprint(payload or response.text)
 
 
 class Ping(AbstractRequest):
@@ -336,4 +337,3 @@ class DataSetAdd(AbstractRequest):
             shard_path = SHARD_ENDPOINT.path % (dataset_uuid, shard_id)
             endpoint = Endpoint(path=shard_path, method='POST')
             self.request(endpoint, request_payload)
-            boop
