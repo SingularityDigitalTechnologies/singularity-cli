@@ -5,6 +5,7 @@ Usage:
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch create --payload-file <payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli (job|batch) cancel <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset add <name> <location> <imprint_location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
@@ -39,12 +40,14 @@ from singularity.commands.api import AtlasStatus
 from singularity.commands.api import BatchCreate
 from singularity.commands.api import BatchStatus
 from singularity.commands.api import BatchSummary
+from singularity.commands.api import Cancel
 from singularity.commands.api import CompanyAdd
 from singularity.commands.api import GenerateHMAC
 from singularity.commands.api import Ping
 from singularity.commands.api import JobStatus
 from singularity.commands.api import UserAdd
 from singularity.commands.api import DataSetAdd
+from singularity.commands.api import DataSetSummary
 
 
 def __load_config():
@@ -101,6 +104,12 @@ def main():
     elif options.get('job') and options.get('status'):
         cmd = JobStatus(options)
 
+    elif options.get('job') and options.get('cancel'):
+        cmd = Cancel(options, 'job')
+
+    elif options.get('batch') and options.get('cancel'):
+        cmd = Cancel(options, 'batch')
+
     elif options.get('atlas') and options.get('status'):
         cmd = AtlasStatus(options)
 
@@ -109,6 +118,9 @@ def main():
 
     elif options.get('dataset') and options.get('add'):
         cmd = DataSetAdd(options)
+
+    elif options.get('dataset') and options.get('summary'):
+        cmd = DataSetSummary(options)
 
     if not cmd:
         print('Unknown option')

@@ -194,5 +194,6 @@ class Sharder(object):
                 shard_files.append(fileinfo)
 
             left -= 1
-            if not left:
+            if left <= 0:
+                ziped.close()
                 yield self.__generate_shard(ram_file, shard_files)

@@ -20,18 +20,21 @@ from singularity.commands.data import Sharder
 
 Endpoint = namedtuple('Endpoint', ['path', 'method'])
 
-PING_ENDPOINT = Endpoint(path='/ping', method='GET')
+PING = Endpoint(path='/ping', method='GET')
 
-ATLAS_STATUS_ENDPOINT = Endpoint(path='/status', method='GET')
-BATCH_INFO_ENDPOINT = Endpoint(path='/batch', method='GET')
-BATCH_CREATE_ENDPOINT = Endpoint(path='/batch', method='POST')
-JOB_INFO_ENDPOINT = Endpoint(path='/job', method='GET')
+ATLAS_STATUS = Endpoint(path='/status', method='GET')
+BATCH_INFO = Endpoint(path='/batch', method='GET')
+BATCH_CREATE = Endpoint(path='/batch', method='POST')
+JOB_INFO = Endpoint(path='/job', method='GET')
 
 GENERATE_HMAC = Endpoint(path='/sec/key', method='POST')
 USER_ADD = Endpoint(path='/user', method='POST')
 COMPANY_ADD = Endpoint(path='/company', method='POST')
-DATASET_ENDPOINT = Endpoint(path='/data', method='POST')
-SHARD_ENDPOINT = Endpoint(path='/data/%s/shard/%s', method='POST')
+DATASET = Endpoint(path='/data', method='POST')
+DATASET_SUMMARY = Endpoint(path='/data/%s', method='GET')
+SHARD = Endpoint(path='/data/%s/shard/%s', method='POST')
+JOB_CANCEL = Endpoint(path='/job/%s', method='DELETE')
+BATCH_CANCEL = Endpoint(path='/batch/%s', method='DELETE')
 
 
 class AbstractRequest(Command):
@@ -122,7 +125,7 @@ class AbstractRequest(Command):
 class Ping(AbstractRequest):
 
     def run(self):
-        self.request(PING_ENDPOINT)
+        self.request(PING)
 
 
 class BatchCreate(AbstractRequest):
@@ -157,7 +160,6 @@ class BatchCreate(AbstractRequest):
         self.gpus = int(gpus)
 
     def run(self):
-
         payload = json.dumps({
             'mode': self.mode,
             'jobs': self.payload,
@@ -167,7 +169,7 @@ class BatchCreate(AbstractRequest):
             }
         })
 
-        self.request(BATCH_CREATE_ENDPOINT, payload)
+        self.request(BATCH_CREATE, payload)
 
 
 class BatchStatus(AbstractRequest):
@@ -175,9 +177,9 @@ class BatchStatus(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        self.endpoint = BATCH_INFO_ENDPOINT
+        self.endpoint = BATCH_INFO
 
-        uuid = options.get('--uuid')
+        uuid = options.get('<uuid>')
         if uuid:
             self.endpoint = Endpoint(path='/batch/%s' % uuid, method='GET')
 
@@ -190,7 +192,7 @@ class BatchSummary(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        self.endpoint = BATCH_INFO_ENDPOINT
+        self.endpoint = BATCH_INFO
 
         self.since = None
         since = options.get('--since')
@@ -221,9 +223,9 @@ class JobStatus(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        self.endpoint = JOB_INFO_ENDPOINT
+        self.endpoint = JOB_INFO
 
-        uuid = options.get('--uuid')
+        uuid = options.get('<uuid>')
         if uuid:
             self.endpoint = Endpoint(path='/job/%s' % uuid, method='GET')
 
@@ -236,7 +238,7 @@ class AtlasStatus(AbstractRequest):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
 
-        self.endpoint = ATLAS_STATUS_ENDPOINT
+        self.endpoint = ATLAS_STATUS
 
     def run(self):
         self.request(self.endpoint)
@@ -252,6 +254,23 @@ class GenerateHMAC(AbstractRequest):
 
     def run(self):
         self.request(self.endpoint, json.dumps({'email': self.email}))
+
+
+class Cancel(AbstractRequest):
+    def __init__(self, options, kind, **kwargs):
+        super().__init__(options, kind, **kwargs)
+
+        self.kind = kind
+        self.uuid = options.get('<uuid>')
+
+    def run(self):
+        if self.kind == 'batch':
+            path = BATCH_CANCEL.path % self.uuid
+        elif self.kind == 'job':
+            path = JOB_CANCEL.path % self.uuid
+
+        endpoint = Endpoint(path=path, method='DELETE')
+        self.request(endpoint)
 
 
 class UserAdd(AbstractRequest):
@@ -312,8 +331,7 @@ class DataSetAdd(AbstractRequest):
 
         self.pilot_count = int(pilot_count)
 
-        self.dataset_endpoint = DATASET_ENDPOINT
-        self.shard_endpoint = SHARD_ENDPOINT
+        self.dataset_endpoint = DATASET
 
         self.sharder = Sharder(location, imprint_location)
 
@@ -329,11 +347,19 @@ class DataSetAdd(AbstractRequest):
             raise SystemExit('No dataset id recieved')
 
         for shard_id, shard in self.sharder.get_new_shards():
-            request_payload = json.dumps({
-                'shard_id': shard_id,
-                'shard': base64.b64encode(shard).decode(),
-            })
-
-            shard_path = SHARD_ENDPOINT.path % (dataset_uuid, shard_id)
+            shard_path = SHARD.path % (dataset_uuid, shard_id)
             endpoint = Endpoint(path=shard_path, method='POST')
-            self.request(endpoint, request_payload)
+
+            self.request(endpoint, base64.b64encode(shard).decode())
+
+
+class DataSetSummary(AbstractRequest):
+    def __init__(self, options, *args, **kwargs):
+        super().__init__(options, *args, **kwargs)
+
+        self.name = options.get('<name>')
+
+    def run(self):
+        path = DATASET_SUMMARY.path % self.name
+        endpoint = Endpoint(path=path, method='GET')
+        self.request(endpoint)
