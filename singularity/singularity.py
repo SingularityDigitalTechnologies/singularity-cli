@@ -3,7 +3,7 @@ singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
   singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
-  singularity-cli batch create --payload-file <payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli batch create --payload-file=<payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli (job|batch) cancel <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
@@ -21,11 +21,6 @@ Options:
   --api-url=<api_url>   URL to send requests to [default: https://api.singularity-technologies.io]
   -h --help             Show this screen.
   --version             Show version.
-
-Examples:
-
-Help:
-  For help using this tool, please open an issue on the repository:
 """
 
 import json
@@ -36,18 +31,15 @@ from docopt import docopt
 
 from . import __version__ as VERSION
 
-from singularity.commands.api import AtlasStatus
-from singularity.commands.api import BatchCreate
-from singularity.commands.api import BatchStatus
-from singularity.commands.api import BatchSummary
-from singularity.commands.api import Cancel
-from singularity.commands.api import CompanyAdd
-from singularity.commands.api import GenerateHMAC
-from singularity.commands.api import Ping
-from singularity.commands.api import JobStatus
-from singularity.commands.api import UserAdd
-from singularity.commands.api import DataSetAdd
-from singularity.commands.api import DataSetSummary
+from singularityapi import AtlasStatus
+from singularityapi import BatchCreate
+from singularityapi import BatchStatus
+from singularityapi import BatchSummary
+from singularityapi import Cancel
+from singularityapi import Ping
+from singularityapi import JobStatus
+from singularityapi import DataSetAdd
+from singularityapi import DataSetSummary
 
 
 def __load_config():
@@ -88,6 +80,17 @@ def main():
     if not options.get('--secret'):
         raise SystemExit('Secret not set in either arguents or config file')
 
+    new_options = {}
+    for key, value in options.items():
+        key = key.replace('--', '')
+        key = key.replace('-', '_')
+        key = key.replace('<', '')
+        key = key.replace('>', '')
+
+        new_options[key] = value
+
+    options = new_options
+
     cmd = None
     if options.get('ping'):
         cmd = Ping(options)
@@ -113,9 +116,6 @@ def main():
     elif options.get('atlas') and options.get('status'):
         cmd = AtlasStatus(options)
 
-    elif options.get('user') and options.get('add'):
-        cmd = UserAdd(options)
-
     elif options.get('dataset') and options.get('add'):
         cmd = DataSetAdd(options)
 
@@ -126,4 +126,10 @@ def main():
         print('Unknown option')
         sys.exit(1)
 
-    cmd.run()
+    try:
+        payload, status_code = cmd.run()
+    except Exception as e:
+        print('Command Error: %s' % e)
+        return 
+
+    cmd.summary()
