@@ -130,6 +130,6 @@ def main():
         payload, status_code = cmd.run()
     except Exception as e:
         print('Command Error: %s' % e)
-        return 
+        return
 
     cmd.summary()
