@@ -10,6 +10,7 @@ Usage:
   singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset add <name> <location> <imprint_location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset summary <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli model download <batch_uuid> <job_uuid> --download-path=<download_path> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli -h | --help
   singularity-cli --version
 
@@ -40,6 +41,7 @@ from singularityapi import Ping
 from singularityapi import JobStatus
 from singularityapi import DataSetAdd
 from singularityapi import DataSetSummary
+from singularityapi import ModelDownload
 
 
 def __load_config():
@@ -96,6 +98,9 @@ def main():
         cmd = Ping(options)
 
     elif options.get('batch') and options.get('create'):
+        with open(options.get('payload_file', 'r')) as f:
+            options['payload'] = json.load(f)
+
         cmd = BatchCreate(options)
 
     elif options.get('batch') and options.get('status'):
@@ -121,6 +126,9 @@ def main():
 
     elif options.get('dataset') and options.get('summary'):
         cmd = DataSetSummary(options)
+
+    elif options.get('model') and options.get('download'):
+        cmd = ModelDownload(options)
 
     if not cmd:
         print('Unknown option')
