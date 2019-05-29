@@ -11,6 +11,8 @@ Its highly recomended that you use the CLI rather than cURL commands.
 The CLI has been tested on Ubuntu. If you require support or bug fixes for OSX
 or Windows operating systems please open an issue!
 
+Pull Requests are always welcome!
+
 ## Installation
 
 The CLI can easily be installed using pip:

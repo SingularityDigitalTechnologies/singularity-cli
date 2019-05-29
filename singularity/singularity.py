@@ -13,13 +13,15 @@ Usage:
   singularity-cli --version
 
 Options:
-  --cpus=<cpus>         Number of CPUs required for each job
-  --gpus=<gpus>         Number of GPUs required for each job
-  --priority=<priority> Priority of job [default: 2]
-  --mode=<mode>         Mode of operation (pilot|production)
-  --api-url=<api_url>   URL to send requests to [default: https://api.singularity-technologies.io]
-  -h --help             Show this screen.
-  --version             Show version.
+  --cpus=<cpus>                    Number of CPUs required for each job (can be fractional)
+  --gpus=<gpus>                    Number of GPUs required for each job
+  --payload-file=<payload_file>    Path to a json file listing ML experiments you wish to run
+  --mode=<mode>                    Pilot or Production
+  --mode=<mode>                    Mode of operation (pilot|production)
+  --api-url=<api_url>              URL to send requests to [default: https://api.singularity-technologies.io]
+
+  -h --help                        Show this screen.
+  --version                        Show version.
 """
 
 import json
