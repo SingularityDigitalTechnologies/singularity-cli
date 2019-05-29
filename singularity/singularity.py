@@ -2,12 +2,10 @@
 singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
-  singularity-cli atlas status [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch create --payload-file=<payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli (job|batch) cancel <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
-  singularity-cli user add <first_name> <last_name> <email> --user-type=<user_type> --password=<password> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset add <name> <location> <imprint_location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset summary <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli model download <batch_uuid> <job_uuid> --download-path=<download_path> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
@@ -32,7 +30,6 @@ from docopt import docopt
 
 from . import __version__ as VERSION
 
-from singularityapi import AtlasStatus
 from singularityapi import BatchCreate
 from singularityapi import BatchStatus
 from singularityapi import BatchSummary
