@@ -16,7 +16,6 @@ Options:
   --cpus=<cpus>                    Number of CPUs required for each job (can be fractional)
   --gpus=<gpus>                    Number of GPUs required for each job
   --payload-file=<payload_file>    Path to a json file listing ML experiments you wish to run
-  --mode=<mode>                    Pilot or Production
   --mode=<mode>                    Mode of operation (pilot|production)
   --api-url=<api_url>              URL to send requests to [default: https://api.singularity-technologies.io]
 
@@ -32,15 +31,15 @@ from docopt import docopt
 
 from . import __version__ as VERSION
 
-from singularityapi import BatchCreate
-from singularityapi import BatchStatus
-from singularityapi import BatchSummary
-from singularityapi import Cancel
-from singularityapi import Ping
-from singularityapi import JobStatus
-from singularityapi import DataSetAdd
-from singularityapi import DataSetSummary
-from singularityapi import ModelDownload
+from singularitytechnologiesapi import BatchCreate
+from singularitytechnologiesapi import BatchStatus
+from singularitytechnologiesapi import BatchSummary
+from singularitytechnologiesapi import Cancel
+from singularitytechnologiesapi import Ping
+from singularitytechnologiesapi import JobStatus
+from singularitytechnologiesapi import DataSetAdd
+from singularitytechnologiesapi import DataSetSummary
+from singularitytechnologiesapi import ModelDownload
 
 
 def __load_config():

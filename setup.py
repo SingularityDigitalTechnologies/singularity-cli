@@ -1,11 +1,13 @@
 import setuptools
 
+from singularity import __version__
+
 with open('README.md', 'r') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name='singularity-cli',
-    version='0.1.0dev',
+    name='singularitytechnologies.singularity-cli',
+    version=__version__,
     author='Sam Lacey',
     author_email='sam.lacey@singularity-technologies.io',
     license='MIT',
@@ -14,6 +16,10 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://github.com/singularitydigitaltechnologies/singularity-cli',
     packages=setuptools.find_packages(),
+    install_requires=[
+        'docopt',
+        'singularitytechnologies.singularitytechnologiesapi==0.1.5dev'
+    ],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
