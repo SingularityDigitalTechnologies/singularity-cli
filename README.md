@@ -21,7 +21,7 @@ The CLI can easily be installed using pip:
 pip3 install singularitytechnologies.singularity-cli
 ```
 
-While Python2.7 should work, we only officially support usage with Python3.5+
+We only officially support usage with Python3.5+
 
 ## Config file
 

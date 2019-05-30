@@ -18,7 +18,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'docopt',
-        'singularitytechnologies.singularitytechnologiesapi==0.1.5dev'
+        'singularitytechnologies.singularitytechnologiesapi==0.1.7dev'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
