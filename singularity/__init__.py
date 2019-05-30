@@ -1,2 +1,2 @@
 # __init__.py
-__version__ = '0.1.5dev'
+__version__ = '0.2.2dev'

@@ -103,6 +103,14 @@ def __data_set_add(options):
         __run_cmd(ShardAdd(shard_options))
 
 
+def __model_download(options):
+        model = __run_cmd(ModelDownload(options))
+        if model:
+            download_path = options.get('download_path')
+            with open(download_path, 'wb') as f:
+                f.write(model)
+
+
 def main():
     config = __load_config()
     options = docopt(__doc__, version=VERSION)
@@ -158,7 +166,7 @@ def main():
         __run_cmd(DataSetSummary(options))
 
     elif options.get('model') and options.get('download'):
-        __run_cmd(ModelDownload(options))
+        __model_download(options)
 
     else:
         print('Unknown option')
