@@ -6,7 +6,7 @@ Usage:
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli (job|batch) cancel <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
-  singularity-cli dataset add <name> <location> <imprint_location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
+  singularity-cli dataset add <name> <location> --pilot-count=<pilot_count> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli dataset summary <name> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli model download <batch_uuid> <job_uuid> --download-path=<download_path> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli -h | --help
@@ -26,6 +26,7 @@ Options:
 import json
 import os
 import sys
+import traceback
 
 from docopt import docopt
 
@@ -35,11 +36,14 @@ from singularitytechnologiesapi import BatchCreate
 from singularitytechnologiesapi import BatchStatus
 from singularitytechnologiesapi import BatchSummary
 from singularitytechnologiesapi import Cancel
-from singularitytechnologiesapi import Ping
 from singularitytechnologiesapi import JobStatus
 from singularitytechnologiesapi import DataSetAdd
 from singularitytechnologiesapi import DataSetSummary
 from singularitytechnologiesapi import ModelDownload
+from singularitytechnologiesapi import Ping
+from singularitytechnologiesapi import ShardAdd
+
+from singularity.data import Sharder
 
 
 def __load_config():
@@ -67,6 +71,38 @@ def __load_config():
     return config
 
 
+def __run_cmd(cmd):
+    try:
+        payload, status_code = cmd.run()
+    except Exception:
+        print(traceback.format_exc())
+
+    cmd.summary()
+
+    # TODO(Sam): Add Status code checks
+    return payload
+
+
+def __data_set_add(options):
+    payload = __run_cmd(DataSetAdd(options))
+    data_set_uuid = payload.get('data_set_uuid')
+    if not data_set_uuid:
+        raise SystemExit('data_set_uuid not found in response')
+
+    location = options.get('location')
+    sharder = Sharder(location)
+    for shard_id, shard in sharder.get_new_shards():
+        shard_options = {
+            'shard': shard,
+            'shard_id': shard_id,
+            'data_set_uuid': data_set_uuid
+        }
+
+        shard_options.update(options)
+
+        __run_cmd(ShardAdd(shard_options))
+
+
 def main():
     config = __load_config()
     options = docopt(__doc__, version=VERSION)
@@ -91,51 +127,39 @@ def main():
 
     options = new_options
 
-    cmd = None
     if options.get('ping'):
-        cmd = Ping(options)
+        __run_cmd(Ping(options))
 
     elif options.get('batch') and options.get('create'):
         with open(options.get('payload_file', 'r')) as f:
             options['payload'] = json.load(f)
 
-        cmd = BatchCreate(options)
+        __run_cmd(BatchCreate(options))
 
     elif options.get('batch') and options.get('status'):
-        cmd = BatchStatus(options)
+        __run_cmd(BatchStatus(options))
 
     elif options.get('batch') and options.get('summary'):
-        cmd = BatchSummary(options)
+        __run_cmd(BatchSummary(options))
 
     elif options.get('job') and options.get('status'):
-        cmd = JobStatus(options)
+        __run_cmd(JobStatus(options))
 
     elif options.get('job') and options.get('cancel'):
-        cmd = Cancel(options, 'job')
+        __run_cmd(Cancel(options, 'job'))
 
     elif options.get('batch') and options.get('cancel'):
-        cmd = Cancel(options, 'batch')
-
-    elif options.get('atlas') and options.get('status'):
-        cmd = AtlasStatus(options)
+        __run_cmd(Cancel(options, 'batch'))
 
     elif options.get('dataset') and options.get('add'):
-        cmd = DataSetAdd(options)
+        __data_set_add(options)
 
     elif options.get('dataset') and options.get('summary'):
-        cmd = DataSetSummary(options)
+        __run_cmd(DataSetSummary(options))
 
     elif options.get('model') and options.get('download'):
-        cmd = ModelDownload(options)
+        __run_cmd(ModelDownload(options))
 
-    if not cmd:
+    else:
         print('Unknown option')
         sys.exit(1)
-
-    try:
-        payload, status_code = cmd.run()
-    except Exception as e:
-        print('Command Error: %s' % e)
-        return
-
-    cmd.summary()

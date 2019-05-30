@@ -17,8 +17,9 @@ setuptools.setup(
     url='https://github.com/singularitydigitaltechnologies/singularity-cli',
     packages=setuptools.find_packages(),
     install_requires=[
+        'asyncio',
         'docopt',
-        'singularitytechnologies.singularitytechnologiesapi==0.1.7dev'
+        'singularitytechnologies.singularitytechnologiesapi==0.2.1dev'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
