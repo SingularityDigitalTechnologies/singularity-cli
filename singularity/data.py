@@ -100,7 +100,6 @@ class Sharder(object):
                 if shard_size + size > SHARD_MAX_SIZE:
                     ziped.close()
 
-                    i += 1
                     yield self.__generate_shard(ram_file, shard_files)
 
                     shard_size = 0
