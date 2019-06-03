@@ -16,10 +16,10 @@ random.seed(a=42, version=2)
 
 class Sharder(object):
     def __init__(self, location):
-        if not location.endswith('/'):
-            location = '%s/' % location
+        self.location = os.path.abspath(location)
 
-        self.location = location
+        if not self.location.endswith('/'):
+            self.location += '/'
 
     async def __generate_file_imprint(self, root, filename):
         file_path = os.path.join(root, filename)
@@ -27,7 +27,12 @@ class Sharder(object):
             contents = f.read()
             hash_id = hashlib.sha256(contents).hexdigest()
             local_path = file_path.replace(self.location, '')
-            return {'path': local_path, 'hash_id': hash_id, 'size': len(contents)}
+
+            return {
+                'path': local_path,
+                'hash_id': hash_id,
+                'size': len(contents)
+            }
 
     def __find_files(self):
         files_to_shard = []
@@ -66,8 +71,11 @@ class Sharder(object):
         ram_file = io.BytesIO()
         ziped = zipfile.ZipFile(ram_file, 'w')
 
+        print('Analysing directory %s' % self.location)
         local_files = self.__find_files()
         left = len(local_files)
+        print('Found %d files to shard' % left)
+
         batches = []
         start = 0
         end = SHARD_BATCH_SIZE
@@ -83,6 +91,7 @@ class Sharder(object):
                 end = left
 
         left = len(batches)
+        i = 0
         while left:
             index = random.randint(0, left-1)
             batch = batches.pop(index)
@@ -92,6 +101,8 @@ class Sharder(object):
                 if shard_size + size > SHARD_MAX_SIZE:
                     ziped.close()
 
+                    print('   Generated shard %d' % i)
+                    i += 1
                     yield self.__generate_shard(ram_file, shard_files)
 
                     shard_size = 0

@@ -2,7 +2,7 @@
 singularity-cli
 Usage:
   singularity-cli ping [--api-url=<api_url>]
-  singularity-cli batch create --payload-file=<payload_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
+  singularity-cli batch create --from-file=<from_file> --cpus=<cpus> --mode=<mode> [--api-key=<api_key> --secret=<secret> --gpus=<gpus> --api-url=<api_url>]
   singularity-cli (job|batch) status <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli (job|batch) cancel <uuid> [--api-key=<api_key> --secret=<secret> --api-url=<api_url>]
   singularity-cli batch summary [--api-key=<api_key> --secret=<secret> --api-url=<api_url> --since=<since>]
@@ -15,7 +15,7 @@ Usage:
 Options:
   --cpus=<cpus>                    Number of CPUs required for each job (can be fractional)
   --gpus=<gpus>                    Number of GPUs required for each job
-  --payload-file=<payload_file>    Path to a json file listing ML experiments you wish to run
+  --from-file=<from_file>    Path to a json file listing ML experiments you wish to run
   --mode=<mode>                    Mode of operation (pilot|production)
   --api-url=<api_url>              URL to send requests to [default: https://api.singularity-technologies.io]
 
@@ -139,7 +139,7 @@ def main():
         __run_cmd(Ping(options))
 
     elif options.get('batch') and options.get('create'):
-        with open(options.get('payload_file', 'r')) as f:
+        with open(options.get('from_file', 'r')) as f:
             options['payload'] = json.load(f)
 
         __run_cmd(BatchCreate(options))
