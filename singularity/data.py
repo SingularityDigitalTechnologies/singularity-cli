@@ -91,7 +91,6 @@ class Sharder(object):
                 end = left
 
         left = len(batches)
-        i = 0
         while left:
             index = random.randint(0, left-1)
             batch = batches.pop(index)
@@ -101,7 +100,6 @@ class Sharder(object):
                 if shard_size + size > SHARD_MAX_SIZE:
                     ziped.close()
 
-                    print('   Generated shard %d' % i)
                     i += 1
                     yield self.__generate_shard(ram_file, shard_files)
 
