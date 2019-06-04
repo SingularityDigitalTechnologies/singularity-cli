@@ -19,7 +19,7 @@ setuptools.setup(
     install_requires=[
         'asyncio',
         'docopt',
-        'singularitytechnologies.singularitytechnologiesapi==0.2.2dev'
+        'singularitytechnologies.singularitytechnologiesapi==0.2.4dev'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

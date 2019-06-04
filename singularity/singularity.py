@@ -73,9 +73,10 @@ def __load_config():
 
 def __run_cmd(cmd):
     try:
-        payload, status_code = cmd.run()
-    except Exception:
+        payload, _ = cmd.run()
+    except Exception as e:
         print(traceback.format_exc())
+        raise SystemExit('\nCommand error, please report bug: %s\n' % e)
 
     cmd.summary()
 
